@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../model/paint_api.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -53,9 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      body: Container(
-        child: Text(width.toString() + ' ' + height.toString()), // 이게 그림판
-      ),
+      body: Column(
+        children: [
+          // Text(width.toString() + ' ' + height.toString()),
+          PaintApi(),
+        ],
+      ), // 이게 그림판
     );
   }
 }
