@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../screen/home_screen.dart';
 
 class Line {
   Offset offset;
-
-  Line(this.offset);
+  Color color;
+  Line(this.offset, this.color);
 }
 
 class PaintApi extends StatefulWidget {
@@ -21,6 +22,15 @@ class _PaintApiState extends State<PaintApi> {
       StreamController<Line>.broadcast();
   StreamController<List<Line>> linesSetStreamController =
       StreamController<List<Line>>.broadcast();
+
+  int mode1 = 0;
+  int mode2 = 0;
+
+  @override
+  void dispose() {
+    linesStreamController.close();
+    linesSetStreamController.close();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +75,149 @@ class _PaintApiState extends State<PaintApi> {
             ),
           ),
         ),
+        menuBar_test(),
+      ],
+    );
+  }
+
+  Widget menuBar_test() {
+    return Container(
+      height: 25,
+      color: Colors.deepPurple,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            // 덱스트 쓰면 벗어나던데
+            width: 60,
+            color: Colors.amberAccent,
+            child: InkWell(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Text('file')],
+              ),
+              onTap: () {},
+            ),
+          ),
+          Flexible(
+            flex: 3,
+            child: Container(
+              // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
+              color: Colors.blueGrey,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'pen and eraser mode',
+                          style: TextStyle(
+                              color: mode1 == 0 ? Colors.white : Colors.black),
+                        )
+                      ],
+                    ),
+                    onTap: () {
+                      setState(() {
+                        if (mode1 != 0) mode1 = 0;
+                      });
+                    },
+                  ),
+                  InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('block mode')],
+                    ),
+                    onTap: () {},
+                  ),
+                  InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('capture mode')],
+                    ),
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Flexible(
+            flex: 3,
+            child: Container(
+              // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
+              color: Colors.red,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'pen',
+                          style: TextStyle(
+                              color: mode2 == 0 ? Colors.white : Colors.black),
+                        )
+                      ],
+                    ),
+                    onTap: () {
+                      setState(() {
+                        if (mode2 != 0) mode2 = 0;
+                      });
+                    },
+                  ),
+                  InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'eraser',
+                          style: TextStyle(
+                              color: mode2 == 1 ? Colors.white : Colors.black),
+                        )
+                      ],
+                    ),
+                    onTap: () {
+                      setState(() {
+                        if (mode2 != 1) mode2 = 1;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget menuBar() {
+    return Row(
+      children: [
+        Flexible(
+          flex: 1,
+          child: Container(
+            height: 30,
+            color: Colors.red,
+          ),
+        ),
+        Flexible(
+          flex: 5,
+          child: Container(
+            height: 30,
+            color: Colors.green,
+          ),
+        ),
+        Flexible(
+          flex: 5,
+          child: Container(
+            height: 30,
+            color: Colors.blue,
+          ),
+        ),
       ],
     );
   }
@@ -78,8 +231,8 @@ class _PaintApiState extends State<PaintApi> {
     RenderBox renderBox = context.findRenderObject() as RenderBox;
     Offset offset = renderBox.globalToLocal(details.globalPosition);
     // 라인 추가
-    lines.add(Line(offset));
-    linesStreamController.add(Line(offset));
+    lines.add(Line(offset, mode2 ==1 ? Colors.yellow[100] as Color : Colors.black));
+    linesStreamController.add(Line(offset, mode2 ==1 ? Colors.yellow[100] as Color : Colors.black));
   }
 
   void onPanEnd(DragEndDetails details) {
@@ -100,7 +253,7 @@ class Test extends CustomPainter {
     Paint paintMountains = Paint()
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
-      ..color = Colors.brown;
+      ..color = linesSet[0].color;
 
     if (linesSet.length == 0) return;
     for (var i = 0; i < linesSet.length - 1; i++) {
@@ -121,7 +274,6 @@ class Test extends CustomPainter {
   }
 }
 
-
 class Test1 extends CustomPainter {
   List<List<Line>> linesSet;
 
@@ -129,10 +281,7 @@ class Test1 extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paintMountains = Paint()
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0
-      ..color = Colors.brown;
+
 
     if (linesSet.length == 0) return;
 
@@ -142,6 +291,10 @@ class Test1 extends CustomPainter {
     // }
     print('herere');
     for (var j = 0; j < linesSet.length; j++) {
+      Paint paintMountains = Paint()
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 5.0
+        ..color = linesSet[j][0].color;
       for (var i = 0; i < linesSet[j].length - 1; i++) {
         canvas.drawLine(
             linesSet[j][i].offset, linesSet[j][i + 1].offset, paintMountains);
@@ -150,7 +303,7 @@ class Test1 extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(Test delegate) {
+  bool shouldRepaint(Test1 delegate) {
     return true;
   }
 }
