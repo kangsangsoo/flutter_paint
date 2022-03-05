@@ -60,7 +60,7 @@ class _PaintApiState extends State<PaintApi> {
               stream: linesSetStreamController.stream,
               builder: (context, snapshot) {
                 return CustomPaint(
-                  painter: Test1(linesSet),
+                  painter: Test1(linesSet, circles),
                 );
               },
             ),
@@ -132,16 +132,27 @@ class _PaintApiState extends State<PaintApi> {
                     ),
                     onTap: () {
                       setState(() {
-                        if (mode1 != 0) mode1 = 0;
+                        if (mode1 != 0) {
+                          mode1 = 0;
+                          mode2 = 0;
+                        }
                       });
                     },
                   ),
                   InkWell(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('block mode')],
+                      children: [Text('block mode',style: TextStyle(
+                          color: mode1 == 1 ? Colors.white : Colors.black),)],
                     ),
-                    onTap: () {},
+                    onTap: () {
+                      setState(() {
+                        if (mode1 != 1) {
+                          mode1 = 1;
+                          mode2 = 0;
+                        }
+                      });
+                    },
                   ),
                   InkWell(
                     child: Column(
@@ -166,8 +177,15 @@ class _PaintApiState extends State<PaintApi> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        mode1 == 0 ?
                         Text(
                           'pen',
+                          style: TextStyle(
+                              color: mode2 == 0 ? Colors.white : Colors.black),
+                        )
+                            :
+                        Text(
+                          'circle',
                           style: TextStyle(
                               color: mode2 == 0 ? Colors.white : Colors.black),
                         )
@@ -175,7 +193,9 @@ class _PaintApiState extends State<PaintApi> {
                     ),
                     onTap: () {
                       setState(() {
-                        if (mode2 != 0) mode2 = 0;
+                        if (mode2 != 0) {
+                          mode2 = 0;
+                        }
                       });
                     },
                   ),
@@ -183,8 +203,15 @@ class _PaintApiState extends State<PaintApi> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        mode1 == 0 ?
                         Text(
                           'eraser',
+                          style: TextStyle(
+                              color: mode2 == 1 ? Colors.white : Colors.black),
+                        )
+                            :
+                        Text(
+                          'rect',
                           style: TextStyle(
                               color: mode2 == 1 ? Colors.white : Colors.black),
                         )
@@ -192,7 +219,9 @@ class _PaintApiState extends State<PaintApi> {
                     ),
                     onTap: () {
                       setState(() {
-                        if (mode2 != 1) mode2 = 1;
+                        if (mode2 != 1) {
+                          mode2 = 1;
+                        }
                       });
                     },
                   ),
@@ -240,7 +269,9 @@ class _PaintApiState extends State<PaintApi> {
         lines = <Line>[];
         break;
       case 1:
-        circles.add(Circle(Offset(50, 50), Colors.black, 50));
+        RenderBox renderBox = context.findRenderObject() as RenderBox;
+        Offset offset = renderBox.globalToLocal(details.globalPosition);
+        circles.add(Circle(offset, Colors.black, 50));
         break;
       default:
     }
@@ -273,6 +304,7 @@ class _PaintApiState extends State<PaintApi> {
         linesSetStreamController.add(lines);
         break;
       case 1:
+        linesSetStreamController.add(lines); // 야매..
         break;
       default:
 
@@ -287,12 +319,14 @@ class Test extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+
+    if (linesSet.length == 0) return;
+
     Paint paintMountains = Paint()
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
       ..color = linesSet[0].color;
 
-    if (linesSet.length == 0) return;
     for (var i = 0; i < linesSet.length - 1; i++) {
       canvas.drawLine(
           linesSet[i].offset, linesSet[i + 1].offset, paintMountains);
@@ -303,6 +337,7 @@ class Test extends CustomPainter {
     //         linesSet[j][i].offset, linesSet[j][i + 1].offset, paintMountains);
     //   }
     // }
+
   }
 
   @override
@@ -313,11 +348,22 @@ class Test extends CustomPainter {
 
 class Test1 extends CustomPainter {
   List<List<Line>> linesSet;
+  List<Circle> circles;
 
-  Test1(this.linesSet);
+  Test1(this.linesSet, this.circles);
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (circles.length != 0) {
+      for (var j = 0; j < circles.length; j++) {
+        var paint1 = Paint()
+          ..color = circles[j].color
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(circles[j].offset, circles[j].radius, paint1);
+      }
+    }
+
+
     if (linesSet.length == 0) return;
 
     // for (var i = 0; i < linesSet.length - 1; i++) {
