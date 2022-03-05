@@ -37,6 +37,7 @@ class _PaintApiState extends State<PaintApi> {
   int mode1 = 0;
   int mode2 = 0;
 
+
   @override
   void dispose() {
     linesStreamController.close();
@@ -157,7 +158,7 @@ class _PaintApiState extends State<PaintApi> {
                   InkWell(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('capture mode')],
+                      children: [Text('move mode')],
                     ),
                     onTap: () {},
                   ),
