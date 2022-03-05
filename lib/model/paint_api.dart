@@ -7,7 +7,16 @@ import '../screen/home_screen.dart';
 class Line {
   Offset offset;
   Color color;
+
   Line(this.offset, this.color);
+}
+
+class Circle {
+  Offset offset;
+  Color color;
+  double radius;
+
+  Circle(this.offset, this.color, this.radius);
 }
 
 class PaintApi extends StatefulWidget {
@@ -22,6 +31,8 @@ class _PaintApiState extends State<PaintApi> {
       StreamController<Line>.broadcast();
   StreamController<List<Line>> linesSetStreamController =
       StreamController<List<Line>>.broadcast();
+
+  List<Circle> circles = <Circle>[];
 
   int mode1 = 0;
   int mode2 = 0;
@@ -223,23 +234,49 @@ class _PaintApiState extends State<PaintApi> {
   }
 
   void onPanStart(DragStartDetails details) {
-    lines = <Line>[];
+    // 모드에 따라 다르게 반응해야 한다.
+    switch (mode1) {
+      case 0:
+        lines = <Line>[];
+        break;
+      case 1:
+        circles.add(Circle(Offset(50, 50), Colors.black, 50));
+        break;
+      default:
+    }
   }
 
   void onPanUpdate(DragUpdateDetails details) {
-    // 현재 좌표를 가져와야 한다.
-    RenderBox renderBox = context.findRenderObject() as RenderBox;
-    Offset offset = renderBox.globalToLocal(details.globalPosition);
-    // 라인 추가
-    lines.add(Line(offset, mode2 ==1 ? Colors.yellow[100] as Color : Colors.black));
-    linesStreamController.add(Line(offset, mode2 ==1 ? Colors.yellow[100] as Color : Colors.black));
+    switch (mode1) {
+      case 0:
+        // 현재 좌표를 가져와야 한다.
+        RenderBox renderBox = context.findRenderObject() as RenderBox;
+        Offset offset = renderBox.globalToLocal(details.globalPosition);
+        // 라인 추가
+        lines.add(Line(
+            offset, mode2 == 1 ? Colors.yellow[100] as Color : Colors.black));
+        linesStreamController.add(Line(
+            offset, mode2 == 1 ? Colors.yellow[100] as Color : Colors.black));
+        break;
+      case 1:
+        break;
+      default:
+    }
   }
 
   void onPanEnd(DragEndDetails details) {
-    // 라인 종료
-    linesSet.add(lines);
-    print(linesSet.length);
-    linesSetStreamController.add(lines);
+    switch (mode1) {
+      case 0:
+        // 라인 종료
+        linesSet.add(lines);
+        print(linesSet.length);
+        linesSetStreamController.add(lines);
+        break;
+      case 1:
+        break;
+      default:
+
+    }
   }
 }
 
@@ -281,8 +318,6 @@ class Test1 extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-
-
     if (linesSet.length == 0) return;
 
     // for (var i = 0; i < linesSet.length - 1; i++) {
