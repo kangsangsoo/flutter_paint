@@ -4,8 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../screen/home_screen.dart';
 import './line_painter.dart';
-
-
+import './resizable.dart';
 
 class PaintApi extends StatefulWidget {
   @override
@@ -25,7 +24,7 @@ class _PaintApiState extends State<PaintApi> {
   int mode1 = 0;
   int mode2 = 0;
 
-  List<CustomPaint> paintings = <CustomPaint>[];
+  List<Widget> paintings = <Widget>[];
 
   @override
   void dispose() {
@@ -39,46 +38,62 @@ class _PaintApiState extends State<PaintApi> {
     double width = screenSize.width;
     double height = screenSize.height;
 
-    return Stack(
-      children: [
-        Container(
+    if (mode1 == 2) {
+      return Stack(
+        children:  <Widget>[Container(
           width: width,
           height: height - 30, // 다른 방법을.. 생각해보자
-          color: Colors.yellow[100],
-          child: RepaintBoundary(
-            child: StreamBuilder<List<Line>>(
-              stream: linesSetStreamController.stream,
-              builder: (context, snapshot) {
-                return CustomPaint(
-                  painter: Test1(linesSet, circles),
-                );
-              },
-            ),
-          ),
-        ),
-        GestureDetector(
-          onPanStart: onPanStart,
-          onPanEnd: onPanEnd,
-          onPanUpdate: onPanUpdate,
-          child: Container(
+          color: Colors.yellow[100])] + paintings +
+            <Widget>[
+              menuBar_test(),
+            ],
+      );
+    }
+    else {
+      return Stack(
+        children: <Widget>[
+          Container(
             width: width,
             height: height - 30, // 다른 방법을.. 생각해보자
-            color: Colors.transparent,
-            // child: RepaintBoundary(
-              child: StreamBuilder<Line>(
-                stream: linesStreamController.stream,
+            color: Colors.yellow[100],
+            child: RepaintBoundary(
+              child: StreamBuilder<List<Line>>(
+                stream: linesSetStreamController.stream,
                 builder: (context, snapshot) {
                   return CustomPaint(
-                    painter: Test(lines),
+                    painter: Test1(linesSet, circles),
                   );
                 },
-              // ),
+              ),
             ),
           ),
-        ),
-        menuBar_test(),
-      ],
-    );
+        ] +
+            paintings +
+            [
+              GestureDetector(
+                onPanStart: onPanStart,
+                onPanEnd: onPanEnd_testing,
+                onPanUpdate: onPanUpdate,
+                child: Container(
+                  width: width,
+                  height: height - 30, // 다른 방법을.. 생각해보자
+                  color: Colors.transparent,
+                  child: RepaintBoundary(
+                    child: StreamBuilder<Line>(
+                      stream: linesStreamController.stream,
+                      builder: (context, snapshot) {
+                        return CustomPaint(
+                          painter: Test(lines),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              menuBar_test(),
+            ],
+      );
+    }
   }
 
   Widget menuBar_test() {
@@ -132,8 +147,13 @@ class _PaintApiState extends State<PaintApi> {
                   InkWell(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('block mode',style: TextStyle(
-                          color: mode1 == 1 ? Colors.white : Colors.black),)],
+                      children: [
+                        Text(
+                          'block mode',
+                          style: TextStyle(
+                              color: mode1 == 1 ? Colors.white : Colors.black),
+                        )
+                      ],
                     ),
                     onTap: () {
                       setState(() {
@@ -147,9 +167,19 @@ class _PaintApiState extends State<PaintApi> {
                   InkWell(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('move mode')],
+                      children: [
+                        Text(
+                          'move mode',
+                          style: TextStyle(
+                              color: mode1 == 2 ? Colors.white : Colors.black),
+                        )
+                      ],
                     ),
-                    onTap: () {},
+                    onTap: () {
+                      setState(() {
+                        if (mode1 != 2) mode1 = 2;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -167,18 +197,21 @@ class _PaintApiState extends State<PaintApi> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        mode1 == 0 ?
-                        Text(
-                          'pen',
-                          style: TextStyle(
-                              color: mode2 == 0 ? Colors.white : Colors.black),
-                        )
-                            :
-                        Text(
-                          'circle',
-                          style: TextStyle(
-                              color: mode2 == 0 ? Colors.white : Colors.black),
-                        )
+                        mode1 == 0
+                            ? Text(
+                                'pen',
+                                style: TextStyle(
+                                    color: mode2 == 0
+                                        ? Colors.white
+                                        : Colors.black),
+                              )
+                            : Text(
+                                'circle',
+                                style: TextStyle(
+                                    color: mode2 == 0
+                                        ? Colors.white
+                                        : Colors.black),
+                              )
                       ],
                     ),
                     onTap: () {
@@ -193,18 +226,21 @@ class _PaintApiState extends State<PaintApi> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        mode1 == 0 ?
-                        Text(
-                          'eraser',
-                          style: TextStyle(
-                              color: mode2 == 1 ? Colors.white : Colors.black),
-                        )
-                            :
-                        Text(
-                          'rect',
-                          style: TextStyle(
-                              color: mode2 == 1 ? Colors.white : Colors.black),
-                        )
+                        mode1 == 0
+                            ? Text(
+                                'eraser',
+                                style: TextStyle(
+                                    color: mode2 == 1
+                                        ? Colors.white
+                                        : Colors.black),
+                              )
+                            : Text(
+                                'rect',
+                                style: TextStyle(
+                                    color: mode2 == 1
+                                        ? Colors.white
+                                        : Colors.black),
+                              )
                       ],
                     ),
                     onTap: () {
@@ -261,7 +297,11 @@ class _PaintApiState extends State<PaintApi> {
       case 1:
         RenderBox renderBox = context.findRenderObject() as RenderBox;
         Offset offset = renderBox.globalToLocal(details.globalPosition);
-        circles.add(Circle(offset, Colors.black, 50));
+        // circles.add(Circle(offset, Colors.black, 50));
+        paintings.add(
+            ResizableBox(offset, 100, 100, mode2 == 0 ? 100 : 0, Colors.red));
+        print("added");
+        setState(() {});
         break;
       default:
     }
@@ -297,7 +337,22 @@ class _PaintApiState extends State<PaintApi> {
         linesSetStreamController.add(lines); // 야매..
         break;
       default:
+    }
+  }
 
+  void onPanEnd_testing(DragEndDetails details) {
+    switch (mode1) {
+      case 0:
+        paintings.add(CustomPaint(
+          painter: Test(lines),
+        ));
+
+        setState(() {});
+        break;
+      case 1:
+        linesSetStreamController.add(lines); // 야매..
+        break;
+      default:
     }
   }
 }

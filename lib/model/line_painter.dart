@@ -30,7 +30,7 @@ class Test extends CustomPainter {
     Paint paintMountains = Paint()
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 5.0
-      ..color = linesSet[0].color;
+      ..color = linesSet.first.color;
 
     for (var i = 0; i < linesSet.length - 1; i++) {
       canvas.drawLine(
@@ -69,23 +69,23 @@ class Test1 extends CustomPainter {
     }
 
 
-    if (linesSet.length == 0) return;
-
-    // for (var i = 0; i < linesSet.length - 1; i++) {
-    //   canvas.drawLine(
-    //       linesSet[i].offset, linesSet[i + 1].offset, paintMountains);
+    // if (linesSet.length == 0) return;
+    //
+    // // for (var i = 0; i < linesSet.length - 1; i++) {
+    // //   canvas.drawLine(
+    // //       linesSet[i].offset, linesSet[i + 1].offset, paintMountains);
+    // // }
+    // print('herere');
+    // for (var j = 0; j < linesSet.length; j++) {
+    //   Paint paintMountains = Paint()
+    //     ..strokeCap = StrokeCap.round
+    //     ..strokeWidth = 5.0
+    //     ..color = linesSet[j][0].color;
+    //   for (var i = 0; i < linesSet[j].length - 1; i++) {
+    //     canvas.drawLine(
+    //         linesSet[j][i].offset, linesSet[j][i + 1].offset, paintMountains);
+    //   }
     // }
-    print('herere');
-    for (var j = 0; j < linesSet.length; j++) {
-      Paint paintMountains = Paint()
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = 5.0
-        ..color = linesSet[j][0].color;
-      for (var i = 0; i < linesSet[j].length - 1; i++) {
-        canvas.drawLine(
-            linesSet[j][i].offset, linesSet[j][i + 1].offset, paintMountains);
-      }
-    }
   }
 
   @override
