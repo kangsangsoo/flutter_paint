@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../screen/home_screen.dart';
 import './line_painter.dart';
 import './resizable.dart';
+import './capture.dart';
+import './picker.dart';
 
 class PaintApi extends StatefulWidget {
   @override
@@ -24,7 +26,15 @@ class _PaintApiState extends State<PaintApi> {
   int mode1 = 0;
   int mode2 = 0;
 
+  bool opacity_menu = true; // Row가 1이면 menu on, Row 0이면 off
+  void toggle_menu() {
+    opacity_menu = !opacity_menu;
+  }
+
+
   List<Widget> paintings = <Widget>[];
+
+  var globalKey = new GlobalKey();
 
   @override
   void dispose() {
@@ -39,225 +49,260 @@ class _PaintApiState extends State<PaintApi> {
     double height = screenSize.height;
 
     if (mode1 == 2) {
-      return Stack(
-        children:  <Widget>[Container(
-          width: width,
-          height: height - 30, // 다른 방법을.. 생각해보자
-          color: Colors.yellow[100])] + paintings +
-            <Widget>[
-              menuBar_test(),
-            ],
+      return RepaintBoundary(
+        key: globalKey,
+        child: Stack(
+          children: <Widget>[
+                Container(
+                    // width: width,
+                    // height: height, // 다른 방법을.. 생각해보자
+                    color: Colors.yellow[100])
+              ] +
+              paintings +
+              <Widget>[
+                menuBar_test(context),
+              ],
+        ),
       );
-    }
-    else {
-      return Stack(
-        children: <Widget>[
-          Container(
-            width: width,
-            height: height - 30, // 다른 방법을.. 생각해보자
-            color: Colors.yellow[100],
-            child: RepaintBoundary(
-              child: StreamBuilder<List<Line>>(
-                stream: linesSetStreamController.stream,
-                builder: (context, snapshot) {
-                  return CustomPaint(
-                    painter: Test1(linesSet, circles),
-                  );
-                },
-              ),
-            ),
-          ),
-        ] +
-            paintings +
-            [
-              GestureDetector(
-                onPanStart: onPanStart,
-                onPanEnd: onPanEnd_testing,
-                onPanUpdate: onPanUpdate,
-                child: Container(
+    } else {
+      return RepaintBoundary(
+        key: globalKey,
+        child: Stack(
+          children: <Widget>[
+                Container(
                   width: width,
-                  height: height - 30, // 다른 방법을.. 생각해보자
-                  color: Colors.transparent,
+                  height: height, // 다른 방법을.. 생각해보자
+                  color: Colors.yellow[100],
                   child: RepaintBoundary(
-                    child: StreamBuilder<Line>(
-                      stream: linesStreamController.stream,
+                    child: StreamBuilder<List<Line>>(
+                      stream: linesSetStreamController.stream,
                       builder: (context, snapshot) {
                         return CustomPaint(
-                          painter: Test(lines),
+                          painter: Test1(linesSet, circles),
                         );
                       },
                     ),
                   ),
                 ),
-              ),
-              menuBar_test(),
-            ],
+              ] +
+              paintings +
+              [
+                GestureDetector(
+                  onPanStart: onPanStart,
+                  onPanEnd: onPanEnd_testing,
+                  onPanUpdate: onPanUpdate,
+                  child: Container(
+                    width: width,
+                    height: height, // 다른 방법을.. 생각해보자
+                    color: Colors.transparent,
+                    child: RepaintBoundary(
+                      child: StreamBuilder<Line>(
+                        stream: linesStreamController.stream,
+                        builder: (context, snapshot) {
+                          return CustomPaint(
+                            painter: Test(lines),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                menuBar_test(context),
+              ],
+        ),
       );
     }
   }
 
-  Widget menuBar_test() {
-    return Container(
-      height: 25,
-      color: Colors.deepPurple,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            // 덱스트 쓰면 벗어나던데
-            width: 60,
-            color: Colors.amberAccent,
-            child: InkWell(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [Text('file')],
-              ),
-              onTap: () {},
-            ),
-          ),
-          Flexible(
-            flex: 3,
-            child: Container(
-              // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
-              color: Colors.blueGrey,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'pen and eraser mode',
-                          style: TextStyle(
-                              color: mode1 == 0 ? Colors.white : Colors.black),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        if (mode1 != 0) {
-                          mode1 = 0;
-                          mode2 = 0;
-                        }
-                      });
-                    },
+  Widget menuBar_test(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    double width = screenSize.width;
+
+    if (opacity_menu) {
+      return Container(
+        height: 25,
+        width: width,
+        color: Colors.deepPurple,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(
+              flex: 2,
+              fit: FlexFit.tight,
+              child: Container(
+                // 덱스트 쓰면 벗어나던데
+                color: Colors.amberAccent,
+                child: InkWell(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [Text('file')],
                   ),
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'block mode',
-                          style: TextStyle(
-                              color: mode1 == 1 ? Colors.white : Colors.black),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        if (mode1 != 1) {
-                          mode1 = 1;
-                          mode2 = 0;
-                        }
-                      });
-                    },
-                  ),
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'move mode',
-                          style: TextStyle(
-                              color: mode1 == 2 ? Colors.white : Colors.black),
-                        )
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        if (mode1 != 2) mode1 = 2;
-                      });
-                    },
-                  ),
-                ],
+                  onTap: () async {
+                    String file = await fileSaver() as String;
+                    print(file);
+                    toggle_menu();
+                    setState(() {
+                    });
+                    await Future.delayed(const Duration(microseconds: 1), () { // 대충 1ms
+                    });
+                    capture(globalKey, file);
+                    toggle_menu();
+                    setState(() {
+                    });
+                  },
+                ),
               ),
             ),
-          ),
-          Flexible(
-            flex: 3,
-            child: Container(
-              // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
-              color: Colors.red,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        mode1 == 0
-                            ? Text(
-                                'pen',
-                                style: TextStyle(
-                                    color: mode2 == 0
-                                        ? Colors.white
-                                        : Colors.black),
-                              )
-                            : Text(
-                                'circle',
-                                style: TextStyle(
-                                    color: mode2 == 0
-                                        ? Colors.white
-                                        : Colors.black),
-                              )
-                      ],
+            Flexible(
+              flex: 4,
+              child: Container(
+                // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
+                color: Colors.blueGrey,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'pen and eraser mode',
+                            style: TextStyle(
+                                color: mode1 == 0 ? Colors.white : Colors
+                                    .black),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          if (mode1 != 0) {
+                            mode1 = 0;
+                            mode2 = 0;
+                          }
+                        });
+                      },
                     ),
-                    onTap: () {
-                      setState(() {
-                        if (mode2 != 0) {
-                          mode2 = 0;
-                        }
-                      });
-                    },
-                  ),
-                  InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        mode1 == 0
-                            ? Text(
-                                'eraser',
-                                style: TextStyle(
-                                    color: mode2 == 1
-                                        ? Colors.white
-                                        : Colors.black),
-                              )
-                            : Text(
-                                'rect',
-                                style: TextStyle(
-                                    color: mode2 == 1
-                                        ? Colors.white
-                                        : Colors.black),
-                              )
-                      ],
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'block mode',
+                            style: TextStyle(
+                                color: mode1 == 1 ? Colors.white : Colors
+                                    .black),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          if (mode1 != 1) {
+                            mode1 = 1;
+                            mode2 = 0;
+                          }
+                        });
+                      },
                     ),
-                    onTap: () {
-                      setState(() {
-                        if (mode2 != 1) {
-                          mode2 = 1;
-                        }
-                      });
-                    },
-                  ),
-                ],
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'move mode',
+                            style: TextStyle(
+                                color: mode1 == 2 ? Colors.white : Colors
+                                    .black),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          if (mode1 != 2) mode1 = 2;
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+            Flexible(
+              flex: 4,
+              child: Container(
+                // height: 1000, // 최댓값을 주면은 Appbar를 벗어나지 못하나?
+                color: Colors.red,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          mode1 == 0
+                              ? Text(
+                            'pen',
+                            style: TextStyle(
+                                color: mode2 == 0
+                                    ? Colors.white
+                                    : Colors.black),
+                          )
+                              : Text(
+                            'circle',
+                            style: TextStyle(
+                                color: mode2 == 0
+                                    ? Colors.white
+                                    : Colors.black),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          if (mode2 != 0) {
+                            mode2 = 0;
+                          }
+                        });
+                      },
+                    ),
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          mode1 == 0
+                              ? Text(
+                            'eraser',
+                            style: TextStyle(
+                                color: mode2 == 1
+                                    ? Colors.white
+                                    : Colors.black),
+                          )
+                              : Text(
+                            'rect',
+                            style: TextStyle(
+                                color: mode2 == 1
+                                    ? Colors.white
+                                    : Colors.black),
+                          )
+                        ],
+                      ),
+                      onTap: () {
+                        setState(() {
+                          if (mode2 != 1) {
+                            mode2 = 1;
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    else {
+      return Container();
+    }
   }
 
   Widget menuBar() {
