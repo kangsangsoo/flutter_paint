@@ -26,6 +26,8 @@ class _PaintApiState extends State<PaintApi> {
   int mode1 = 0;
   int mode2 = 0;
 
+  String fileName = "";
+
   bool opacity_menu = true; // Row가 1이면 menu on, Row 0이면 off
   void toggle_menu() {
     opacity_menu = !opacity_menu;
@@ -133,24 +135,45 @@ class _PaintApiState extends State<PaintApi> {
               child: Container(
                 // 덱스트 쓰면 벗어나던데
                 color: Colors.amberAccent,
-                child: InkWell(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [Text('file')],
-                  ),
-                  onTap: () async {
-                    String file = await fileSaver() as String;
-                    print(file);
-                    toggle_menu();
-                    setState(() {
-                    });
-                    await Future.delayed(const Duration(microseconds: 1), () { // 대충 1ms
-                    });
-                    capture(globalKey, file);
-                    toggle_menu();
-                    setState(() {
-                    });
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('screen to image')],
+                      ),
+                      onTap: () async {
+                        String file = await fileSaver() as String;
+                        print(file);
+                        toggle_menu();
+                        setState(() {
+                        });
+                        await Future.delayed(const Duration(microseconds: 1), () { // 대충 1ms
+                        });
+                        capture(globalKey, file);
+                        toggle_menu();
+                        setState(() {
+                        });
+                      },
+                    ),
+                    InkWell(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('image to block')],
+                      ),
+                      onTap: () async {
+                        fileName = await filePicker() as String;
+                        // List에 추가하고 repaint
+                        paintings.add(
+                          ResizableBox(Offset(300, 300), 100, 100, 0, Colors.red, fileName),);
+                        setState(() {
+
+                        });
+                        fileName = "";
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -347,7 +370,7 @@ class _PaintApiState extends State<PaintApi> {
         Offset offset = renderBox.globalToLocal(details.globalPosition);
         // circles.add(Circle(offset, Colors.black, 50));
         paintings.add(
-            ResizableBox(offset, 100, 100, mode2 == 0 ? 100 : 0, Colors.red));
+            ResizableBox(offset, 100, 100, mode2 == 0 ? 100 : 0, Colors.red, fileName),);
         print("added");
         setState(() {});
         break;
