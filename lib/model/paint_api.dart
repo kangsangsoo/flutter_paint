@@ -176,6 +176,7 @@ class _PaintApiState extends State<PaintApi> {
                       ),
                       onTap: () {
                         setState(() {
+                          if (mode1 == 2) ResizableState.getStreamController().add(ResizableState.toggle_isMovemode());
                           if (mode1 != 0) {
                             mode1 = 0;
                             mode2 = 0;
@@ -197,6 +198,7 @@ class _PaintApiState extends State<PaintApi> {
                       ),
                       onTap: () {
                         setState(() {
+                          if (mode1 == 2) ResizableState.getStreamController().add(ResizableState.toggle_isMovemode());
                           if (mode1 != 1) {
                             mode1 = 1;
                             mode2 = 0;
@@ -219,6 +221,7 @@ class _PaintApiState extends State<PaintApi> {
                       onTap: () {
                         setState(() {
                           if (mode1 != 2) mode1 = 2;
+                          ResizableState.getStreamController().add(ResizableState.toggle_isMovemode());
                         });
                       },
                     ),

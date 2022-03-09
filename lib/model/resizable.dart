@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import './figure.dart';
 
@@ -26,17 +28,28 @@ class ResizableBox extends StatefulWidget {
   ResizableBox(this.offset, this.width, this.height, this.radius, this.color);
 
 
+
+
   @override
-  _ResizableState createState() => _ResizableState(offset, width, height, radius, color);
+  ResizableState createState() => ResizableState(offset, width, height, radius, color);
 }
 
-class _ResizableState extends State<ResizableBox> {
+class ResizableState extends State<ResizableBox> {
   Offset offset;
   double width, height;
   double radius;
   Color color;
+  static bool isMovemode = false;
+  static StreamController<bool> boolStreamController = StreamController<bool>.broadcast();
+  static bool toggle_isMovemode(){
+    return isMovemode = !isMovemode;
+  }
+  static StreamController<bool> getStreamController() {
+    return boolStreamController;
+  }
 
-  _ResizableState(this.offset, this.width, this.height, this.radius, this.color);
+
+  ResizableState(this.offset, this.width, this.height, this.radius, this.color);
 
   void callback(double deltaWidth, double deltaHeight) {
     setState(() {
@@ -103,32 +116,50 @@ class _ResizableState extends State<ResizableBox> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-            // 눈에 보여지는 박스가 제일 아래에 오도록
-            Positioned(
-              top: offset.dy,
-              left: offset.dx,
-              child: GestureDetector(
-                // 여기가 이제 사각형이냐 동그라미냐
+    // move mode일 때만 보이게 하고 싶다.
+
+    return Container(
+        child: StreamBuilder<bool>(
+          stream: boolStreamController.stream,
+          builder: (context, snapshot) {
+            if (isMovemode != true) {
+              return Positioned(
+                top: offset.dy,
+                left: offset.dx,
                 child: Figure(width, height, radius, color),
-                // child: Container(
-                //   width: width,
-                //   height: height,
-                //   color: Colors.red,
-                // ),
-                onPanUpdate: (DragUpdateDetails details) {
-                  setState(() {
-                    offset = Offset(details.delta.dx + offset.dx,
-                        details.delta.dy + offset.dy);
-                  });
-                },
-              ),
-            ),
-            // 크기 조정 및 drag 위젯
-            // ResizableBtn(callback, RIGHT),
-          ] +
-          createBtn(),
+              );
+            }
+            else {
+              return Stack(
+                children: [
+                  // 눈에 보여지는 박스가 제일 아래에 오도록
+                  Positioned(
+                    top: offset.dy,
+                    left: offset.dx,
+                    child: GestureDetector(
+                      // 여기가 이제 사각형이냐 동그라미냐
+                      child: Figure(width, height, radius, color),
+                      // child: Container(
+                      //   width: width,
+                      //   height: height,
+                      //   color: Colors.red,
+                      // ),
+                      onPanUpdate: (DragUpdateDetails details) {
+                        setState(() {
+                          offset = Offset(details.delta.dx + offset.dx,
+                              details.delta.dy + offset.dy);
+                        });
+                      },
+                    ),
+                  ),
+                  // 크기 조정 및 drag 위젯
+                  // ResizableBtn(callback, RIGHT),
+                ] +
+                    createBtn(),
+              );
+            }
+          }
+        )
     );
   }
 }
