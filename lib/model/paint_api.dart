@@ -151,7 +151,31 @@ class _PaintApiState extends State<PaintApi> {
                         });
                         await Future.delayed(const Duration(microseconds: 1), () { // 대충 1ms
                         });
-                        capture(globalKey, file);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            // return object of type Dialog
+                            return AlertDialog(
+                              title: new Text("경고"),
+                              content: new Text("정말로 저장하시겠습니까?"),
+                              actions: <Widget>[
+                                new FlatButton(
+                                  child: new Text("Yes"),
+                                  onPressed: () {
+                                    capture(globalKey, file);
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                                new FlatButton(
+                                  child: new Text("No"),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
                         toggle_menu();
                         setState(() {
                         });
